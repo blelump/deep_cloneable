@@ -40,12 +40,12 @@ class ActiveRecord::Base
     # ==== Cloning a model without an attribute or nested multiple attributes   
     #    pirate.clone :include => :parrot, :except => [:name, { :parrot => [:name] }]
     # 
-    def clone(options = {})
+    def deep_clone(options = {})
       dict = options[:dictionary]
       dict ||= {} if options.delete(:use_dictionary)
       
       kopy = unless dict
-        super()
+        clone()
       else
         tableized_class = self.class.name.tableize.to_sym
         dict[tableized_class] ||= {}
@@ -84,7 +84,7 @@ class ActiveRecord::Base
               end.try(:name)
               
               self.send(association).collect do |obj| 
-                tmp = obj.clone(opts)
+                tmp = obj.deep_clone(opts)
                 tmp.send("#{association_reflection.primary_key_name.to_s}=", nil)                
                 tmp.send("#{reverse_association_name.to_s}=", kopy) if reverse_association_name
                 tmp
